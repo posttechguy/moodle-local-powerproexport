@@ -15,14 +15,13 @@ require_once($CFG->dirroot.'/user/profile/lib.php');
 
 function local_powerproexport_cron($runhow = 'auto', $data = null) {
 
-    set_config('local_powerproexport', 'lastrun', 0);
     $config = get_config('local_powerproexport');
 
     if (($runhow == 'auto' and $config->ismanual) or ($runhow == 'manual' and empty($config->ismanual))) {
       return false;
     }
- //    local_powerproexport_write_user_data($config);
- local_powerproexport_write_course_completions_data($config);
+    local_powerproexport_write_user_data($config);
+    local_powerproexport_write_course_completions_data($config);
 
     set_config('local_powerproexport', 'lastrun', time());
     return true;
@@ -68,8 +67,10 @@ function local_powerproexport_write_user_data($config, $runhow = 'auto', $data =
           // Cycle through data and add to file.
           foreach ($users as $user) {
 
-              profile_load_custom_fields($user);
-// print_object($user);
+            //  profile_load_custom_fields($user);
+
+              $user->profile = (array)profile_user_record($user->id);
+
               // Write the line to CSV file.
               fwrite($fh,
                   implode(',', array(
@@ -87,7 +88,7 @@ function local_powerproexport_write_user_data($config, $runhow = 'auto', $data =
                       $user->profile['gender'],
                       $user->profile['postaladdress'],
                       $user->profile['employer'],
-                      $user->idnumber,
+                      $user->profile['usi'],
                       $user->profile['phone'])
                )."\r\n");
           }
@@ -180,20 +181,23 @@ function local_powerproexport_get_user_csv_headers() {
 function local_powerproexport_write_course_completions_data($config, $runhow = 'auto', $data = null) {
   global $CFG, $DB;
 
-  if (empty($config->coursecompletionscsvlocation)) {
-      $config->coursecompletionscsvlocation = $CFG->dataroot.'/powerproexport';
+  if (empty($config->coursecompletioncsvlocation)) {
+      $config->coursecompletioncsvlocation = $CFG->dataroot.'/powerproexport/coursecompletions';
   }
   if (!isset($config->coursecompletionscsvprefix)) {
       $config->coursecompletionscsvprefix = '';
+  }
+  if (!isset($config->lastrun)) {
+      $config->lastrun = 0;
   }
 
   // Open the file for writing.
   $filename = '';
 
   if ($data) {
-    $filename = $config->coursecompletionscsvlocation.'/'.$config->coursecompletionscsvprefix.date("Ymd").'-'.date("His").'.csv';
+    $filename = $config->coursecompletioncsvlocation.'/'.$config->coursecompletioncsvprefix.date("Ymd").'-'.date("His").'.csv';
   } else {
-    $filename = $config->coursecompletionscsvlocation.'/'.$config->coursecompletionscsvprefix.date("Ymd").'.csv';
+    $filename = $config->coursecompletioncsvlocation.'/'.$config->coursecompletioncsvprefix.date("Ymd").'.csv';
   }
 
   if ($fh = fopen($filename, 'w')) {
@@ -221,7 +225,7 @@ function local_powerproexport_write_course_completions_data($config, $runhow = '
           }
 
           // Close the recordset to free up RDBMS memory.
-          $users->close();
+          $completions->close();
       }
       // Close the file.
       fclose($fh);
