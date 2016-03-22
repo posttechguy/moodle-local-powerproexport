@@ -12,7 +12,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['coursetype'] = 'Course';
+$string['coursename'] = 'Course';
+$string['courseshortname'] = 'Course Shortname';
+$string['courseidnumber'] = 'Unit name';
+$string['certificatecode'] = 'Certificate issue code';
+$string['timecompleted'] = 'Date completed';
 $string['usercsvlocation'] = 'User CSV File Location';
 $string['usercsvlocationdesc'] = 'Full server path where User CSV files should be created. This directory must be writable by the web user';
 $string['usercsvprefix'] = 'User CSV File Name Prefix';

@@ -11,7 +11,9 @@
   * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
 
-function local_powerproexport_cron($runhow, $data = null) {
+require_once($CFG->dirroot.'/user/profile/lib.php');
+
+function local_powerproexport_cron($runhow = 'auto', $data = null) {
 
     set_config('local_powerproexport', 'lastrun', 0);
     $config = get_config('local_powerproexport');
@@ -19,8 +21,8 @@ function local_powerproexport_cron($runhow, $data = null) {
     if (($runhow == 'auto' and $config->ismanual) or ($runhow == 'manual' and empty($config->ismanual))) {
       return false;
     }
-    local_powerproexport_write_user_data($config);
-//  local_powerproexport_write_course_completions_data($config);
+ //    local_powerproexport_write_user_data($config);
+ local_powerproexport_write_course_completions_data($config);
 
     set_config('local_powerproexport', 'lastrun', time());
     return true;
@@ -32,7 +34,7 @@ function local_powerproexport_cron($runhow, $data = null) {
   * @param string $csv  the csv data
   * @return boolean  success?
 */
-function local_powerproexport_write_user_data($config, $runhow, $data = null) {
+function local_powerproexport_write_user_data($config, $runhow = 'auto', $data = null) {
   global $CFG, $DB;
 
   if (empty($config->csvlocation)) {
@@ -40,6 +42,9 @@ function local_powerproexport_write_user_data($config, $runhow, $data = null) {
   }
   if (!isset($config->csvprefix)) {
       $config->usercsvprefix = '';
+  }
+  if (!isset($config->lastrun)) {
+      $config->lastrun = 0;
   }
 
   // Open the file for writing.
@@ -56,7 +61,7 @@ function local_powerproexport_write_user_data($config, $runhow, $data = null) {
       // Write the headers first.
       fwrite($fh, implode(',', local_powerproexport_get_user_csv_headers())."\r\n");
 
-      $users = local_powerproexport_get_user_data($config->lastrun, $data);
+      $users = local_powerproexport_get_user_data($config->lastrun);
 
       if ($users->valid()) {
 
@@ -64,7 +69,7 @@ function local_powerproexport_write_user_data($config, $runhow, $data = null) {
           foreach ($users as $user) {
 
               profile_load_custom_fields($user);
-
+// print_object($user);
               // Write the line to CSV file.
               fwrite($fh,
                   implode(',', array(
@@ -73,17 +78,17 @@ function local_powerproexport_write_user_data($config, $runhow, $data = null) {
                       $user->firstname,
                       $user->lastname,
                       $user->country,
-                      $user->dob,
-                      $user->streetnumber,
-                      $user->streetname,
-                      $user->town,
-                      $user->postcode,
-                      $user->state,
-                      $user->gender,
-                      $user->postaladdress,
-                      $user->employer,
+                      $user->profile['dob'],
+                      $user->profile['streetnumber'],
+                      $user->profile['streetname'],
+                      $user->profile['town'],
+                      $user->profile['postcode'],
+                      $user->profile['state'],
+                      $user->profile['gender'],
+                      $user->profile['postaladdress'],
+                      $user->profile['employer'],
                       $user->idnumber,
-                      $user->phone)
+                      $user->profile['phone'])
                )."\r\n");
           }
 
@@ -111,10 +116,9 @@ function local_powerproexport_get_user_data($lastrun = 0) {
 
     $params = array('lastrun' => $lastrun);
     $sql = "
-        SELECT
-          *
-        FROM mdl_user AS u
-        WHERE u.timemodified > :lastrun
+        SELECT  *
+        FROM    {user} AS u
+        WHERE   u.timemodified > :lastrun
     ";
 
 /*
@@ -173,7 +177,7 @@ function local_powerproexport_get_user_csv_headers() {
   * @param string $csv  the csv data
   * @return boolean  success?
 */
-function local_powerproexport_write_coursecompletions_data($config, $runhow, $data = null) {
+function local_powerproexport_write_course_completions_data($config, $runhow = 'auto', $data = null) {
   global $CFG, $DB;
 
   if (empty($config->coursecompletionscsvlocation)) {
@@ -195,9 +199,9 @@ function local_powerproexport_write_coursecompletions_data($config, $runhow, $da
   if ($fh = fopen($filename, 'w')) {
 
       // Write the headers first.
-      fwrite($fh, implode(',', local_powerproexport_get_coursecompletions_csv_headers())."\r\n");
+      fwrite($fh, implode(',', local_powerproexport_get_course_completions_csv_headers())."\r\n");
 
-      $completions = local_powerproexport_getcoursecompletions_data($config->lastrun, $data);
+      $completions = local_powerproexport_get_course_completions_data($config->lastrun);
 
       if ($completions->valid()) {
 
@@ -212,7 +216,7 @@ function local_powerproexport_write_coursecompletions_data($config, $runhow, $da
                       $usercompletions->courseshortname,
                       $usercompletions->courseidnumber,
                       $usercompletions->certificatecode,
-                      $usercompletions->timecompleted
+                      $usercompletions->timecompleted)
                )."\r\n");
           }
 
@@ -235,7 +239,7 @@ function local_powerproexport_write_coursecompletions_data($config, $runhow, $da
  * @param integer   $from   time stamp
  * @return object   $DB     record set
  */
-function local_powerproexport_get_coursecompletions_data($lastrun = 0) {
+function local_powerproexport_get_course_completions_data($lastrun = 0) {
     global $DB;
 
     $params = array('lastrun' => $lastrun);
@@ -273,7 +277,7 @@ function local_powerproexport_get_coursecompletions_data($lastrun = 0) {
  *
  * @return array
  */
-function local_powerproexport_get_coursecompletions_csv_headers() {
+function local_powerproexport_get_course_completions_csv_headers() {
     return array(
         get_string('username',        'local_powerproexport'),
         get_string('coursename',      'local_powerproexport'),
