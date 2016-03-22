@@ -13,18 +13,21 @@
 
 function local_powerproexport_cron($runhow, $data = null) {
 
-  $config = get_config('local_powerproexport');
+    set_config('local_powerproexport', 'lastrun', 0);
+    $config = get_config('local_powerproexport');
 
-  local_powerproexport_write_user_data($config);
-  local_powerproexport_write_course_completions_data($config);
+    if (($runhow == 'auto' and $config->ismanual) or ($runhow == 'manual' and empty($config->ismanual))) {
+      return false;
+    }
+    local_powerproexport_write_user_data($config);
+//  local_powerproexport_write_course_completions_data($config);
 
-
-  set_config('local_powerproexport', 'lastrun', time());
-
+    set_config('local_powerproexport', 'lastrun', time());
+    return true;
 }
 
 /**
-  * Write the CSV output to file
+  * Write the user CSV output to file
   *
   * @param string $csv  the csv data
   * @return boolean  success?
@@ -32,66 +35,60 @@ function local_powerproexport_cron($runhow, $data = null) {
 function local_powerproexport_write_user_data($config, $runhow, $data = null) {
   global $CFG, $DB;
 
-  $config = get_config('local_powerproexport');
-
-  if (($runhow == 'auto' and $config->ismanual) or ($runhow == 'manual' and empty($config->ismanual))) {
-    return false;
-  }
-
   if (empty($config->csvlocation)) {
-      $config->csvlocation = $CFG->dataroot.'/powerproexport';
+      $config->usercsvlocation = $CFG->dataroot.'/powerproexport';
   }
   if (!isset($config->csvprefix)) {
-      $config->csvprefix = '';
+      $config->usercsvprefix = '';
   }
-  if (!isset($config->lastrun)) {
-      // First time run we get all data.
-      $config->lastrun = 0;
-  }
+
   // Open the file for writing.
   $filename = '';
 
   if ($data) {
-    $filename = $config->csvlocation.'/'.$config->csvprefix.date("Ymd").'-'.date("His").'.csv';
+    $filename = $config->usercsvlocation.'/'.$config->usercsvprefix.date("Ymd").'-'.date("His").'.csv';
   } else {
-    $filename = $config->csvlocation.'/'.$config->csvprefix.date("Ymd").'.csv';
+    $filename = $config->usercsvlocation.'/'.$config->usercsvprefix.date("Ymd").'.csv';
   }
 
   if ($fh = fopen($filename, 'w')) {
 
       // Write the headers first.
-      fwrite($fh, implode(',', local_powerproexport_get_csv_headers())."\r\n");
+      fwrite($fh, implode(',', local_powerproexport_get_user_csv_headers())."\r\n");
 
-      $rs = local_powerproexport_get_user_data($config->lastrun, $data);
+      $users = local_powerproexport_get_user_data($config->lastrun, $data);
 
-      if ($rs->valid()) {
+      if ($users->valid()) {
 
           // Cycle through data and add to file.
-          foreach ($rs as $r) {
+          foreach ($users as $user) {
+
+              profile_load_custom_fields($user);
+
               // Write the line to CSV file.
               fwrite($fh,
                   implode(',', array(
-                      $r->username,
-                      $r->email,
-                      $r->firstname,
-                      $r->lastname,
-                      $r->country,
-                      $r->dob,
-                      $r->streetnumber,
-                      $r->streetname,
-                      $r->town,
-                      $r->postcode,
-                      $r->state,
-                      $r->gender,
-                      $r->postaladdress,
-                      $r->employer,
-                      $r->idnumber,
-                      $r->phone)
+                      $user->username,
+                      $user->email,
+                      $user->firstname,
+                      $user->lastname,
+                      $user->country,
+                      $user->dob,
+                      $user->streetnumber,
+                      $user->streetname,
+                      $user->town,
+                      $user->postcode,
+                      $user->state,
+                      $user->gender,
+                      $user->postaladdress,
+                      $user->employer,
+                      $user->idnumber,
+                      $user->phone)
                )."\r\n");
           }
 
           // Close the recordset to free up RDBMS memory.
-          $rs->close();
+          $users->close();
       }
       // Close the file.
       fclose($fh);
@@ -109,99 +106,17 @@ function local_powerproexport_write_user_data($config, $runhow, $data = null) {
  * @param integer   $from   time stamp
  * @return object   $DB     record set
  */
-function local_powerproexport_get_user_data($from, $data = null) {
+function local_powerproexport_get_user_data($lastrun = 0) {
     global $DB;
-// CONCAT_WS('-', u.id, c.id, g.id),
 
-    $usersql = "
-        (
-            (
-                {user} u
-                JOIN
-                (
-                    (
-                        SELECT ue.userid as userid, e.courseid as courseid
-                        FROM {user_enrolments} ue
-                        JOIN {enrol} e ON ue.enrolid = e.id
-                        WHERE ue.timeend IS NOT NULL AND ue.timemodified >= :from1
-                    )
-                    UNION
-                    (
-                        SELECT gg.userid as userid, gi.courseid as courseid
-                        FROM {grade_grades} gg
-                        JOIN {grade_items} gi
-                        ON gi.id = gg.itemid
-                        WHERE gg.timemodified IS NOT NULL
-                        AND gg.timemodified >= :from2
-                        AND gi.itemtype = 'course'
-                    )
-                ) AS x ON x.userid = u.id
-            )
-            JOIN {course} c ON x.courseid = c.id %%COURSECLAUSE%%
-        )
-        LEFT JOIN {groups} g ON g.courseid = c.id
-    ";
-    if ($data->group != "All") {
-      $usersql = "
-        (
-        $usersql
-        )
-        JOIN {groups_members} gm ON gm.groupid = g.id %%GROUPCLAUSE%% AND gm.userid = u.id
-      ";
-    }
-
+    $params = array('lastrun' => $lastrun);
     $sql = "
         SELECT
-            u.id as userid, u.username, u.idnumber,
-            u.firstname, u.lastname, x.courseid,
-            c.shortname as unitcode, g.name as batch,
-            y.finalgrade, y.scaleid, y.scale, y.timemodified, y.finalpercent
-        FROM
-        (
-            $usersql
-        )
-        LEFT JOIN
-        (
-            SELECT
-                gi.itemtype, gi.scaleid, round(gg.finalgrade) as finalgrade, gg.rawgrade,
-                s.scale, gg.userid, gi.courseid, gg.timemodified, round(gg.finalgrade/gg.rawgrademax*100) as finalpercent
-            FROM
-            (
-                {grade_items} gi
-                JOIN {grade_grades} gg ON gg.itemid = gi.id
-            )
-            LEFT JOIN {scale} s ON gi.scaleid = s.id
-            WHERE gi.itemtype = 'course'
-        ) as y ON x.userid = y.userid AND x.courseid = y.courseid
-        GROUP BY 1,2,3,4,5,6,7,8
+          *
+        FROM mdl_user AS u
+        WHERE u.timemodified > :lastrun
     ";
 
-    $params = array();
-
-    if ($data)
-    {
-        // This for the manually run exports of grades
-
-        $params['from1']  = 0; // Gets all records from 185 days ago
-        $params['from2']  = 0; // Gets all records from 185 days ago
-        $params['course'] = $data->course;
-        $params['group']  = $data->group;
-        $sql              = str_replace("%%COURSECLAUSE%%", ($data->course) ? " AND x.courseid = :course " : "", $sql);
-        $sql              = str_replace("%%GROUPCLAUSE%%", ($data->group != "All") ? " AND g.name = :group " : "", $sql);
-    }
-    else
-    {
-        // Gets the last run time, removes the seconds from today (which is usually run early in the morning),
-        // yesterday, and the day before, (so around 48 hours).
-        // It will then allow the export to get the records for the last two days
-
-        //                          seconds of today   seconds of yesterday     seconds of day before that
-        $runfrom          = $from - ($from % 86400)      - 86400                  - 86400;
-        $params['from1']  = $runfrom;
-        $params['from2']  = $runfrom;
-        $sql              = str_replace("%%COURSECLAUSE%%", "", $sql);
-        $sql              = str_replace("%%GROUPCLAUSE%%", "", $sql);
-    }
 /*
 
     if ($_SERVER['REMOTE_ADDR'] == '203.59.120.7')
@@ -219,7 +134,7 @@ function local_powerproexport_get_user_data($from, $data = null) {
  *
  * @return array
  */
-function local_powerproexport_get_csv_headers() {
+function local_powerproexport_get_user_csv_headers() {
     return array(
         get_string('username',   'local_powerproexport'),
         get_string('email',   'local_powerproexport'),
@@ -239,4 +154,134 @@ function local_powerproexport_get_csv_headers() {
         get_string('phone', 'local_powerproexport'),
     );
 }
+
+
+/**
+
+
+
+
+
+*/
+
+
+
+
+/**
+  * Write the coursecompletions CSV output to file
+  *
+  * @param string $csv  the csv data
+  * @return boolean  success?
+*/
+function local_powerproexport_write_coursecompletions_data($config, $runhow, $data = null) {
+  global $CFG, $DB;
+
+  if (empty($config->coursecompletionscsvlocation)) {
+      $config->coursecompletionscsvlocation = $CFG->dataroot.'/powerproexport';
+  }
+  if (!isset($config->coursecompletionscsvprefix)) {
+      $config->coursecompletionscsvprefix = '';
+  }
+
+  // Open the file for writing.
+  $filename = '';
+
+  if ($data) {
+    $filename = $config->coursecompletionscsvlocation.'/'.$config->coursecompletionscsvprefix.date("Ymd").'-'.date("His").'.csv';
+  } else {
+    $filename = $config->coursecompletionscsvlocation.'/'.$config->coursecompletionscsvprefix.date("Ymd").'.csv';
+  }
+
+  if ($fh = fopen($filename, 'w')) {
+
+      // Write the headers first.
+      fwrite($fh, implode(',', local_powerproexport_get_coursecompletions_csv_headers())."\r\n");
+
+      $completions = local_powerproexport_getcoursecompletions_data($config->lastrun, $data);
+
+      if ($completions->valid()) {
+
+          // Cycle through data and add to file.
+          foreach ($completions as $usercompletions) {
+
+              // Write the line to CSV file.
+              fwrite($fh,
+                  implode(',', array(
+                      $usercompletions->username,
+                      $usercompletions->coursename,
+                      $usercompletions->courseshortname,
+                      $usercompletions->courseidnumber,
+                      $usercompletions->certificatecode,
+                      $usercompletions->timecompleted
+               )."\r\n");
+          }
+
+          // Close the recordset to free up RDBMS memory.
+          $users->close();
+      }
+      // Close the file.
+      fclose($fh);
+
+      return true;
+  } else {
+      return false;
+  }
+}
+
+/**
+ * Return a record set with the grade, group, enrolment data.
+ * We use a record set to minimise memory usage as this report may get quite large.
+ *
+ * @param integer   $from   time stamp
+ * @return object   $DB     record set
+ */
+function local_powerproexport_get_coursecompletions_data($lastrun = 0) {
+    global $DB;
+
+    $params = array('lastrun' => $lastrun);
+    $sql = "
+        SELECT
+          u.id, u.username,
+          c.fullname AS coursename,
+          c.shortname AS courseshortname,
+          c.idnumber AS courseidnumber,
+          ci.code AS certificatecode,
+          cc.timecompleted
+        FROM mdl_user AS u
+        JOIN mdl_user_enrolments AS ue ON ue.userid = u.id
+        JOIN mdl_enrol AS e ON e.id = ue.enrolid
+        JOIN mdl_course AS c ON e.courseid = c.id
+        JOIN mdl_course_completions AS cc ON cc.course = c.id AND cc.userid = u.id
+        JOIN mdl_certificate_issues AS ci ON ci.userid = u.id
+        WHERE cc.timecompleted > :lastrun
+    ";
+
+/*
+
+    if ($_SERVER['REMOTE_ADDR'] == '203.59.120.7')
+    {
+        print_object($params);
+         echo "<pre>$sql</pre>";
+    }
+*/
+    return $DB->get_recordset_sql($sql, $params);
+}
+
+
+/**
+ * Return the CSV headers
+ *
+ * @return array
+ */
+function local_powerproexport_get_coursecompletions_csv_headers() {
+    return array(
+        get_string('username',        'local_powerproexport'),
+        get_string('coursename',      'local_powerproexport'),
+        get_string('courseshortname', 'local_powerproexport'),
+        get_string('courseidnumber',  'local_powerproexport'),
+        get_string('certificatecode', 'local_powerproexport'),
+        get_string('timecompleted',   'local_powerproexport'),
+    );
+}
+
 

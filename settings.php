@@ -22,7 +22,7 @@ if (has_capability('local/powerproexport:config', context_system::instance())) {
                 'local_powerproexport/usercsvlocation',
                 new lang_string('usercsvlocation', 'local_powerproexport'),
                 new lang_string('usercsvlocationdesc', 'local_powerproexport'),
-                $CFG->dataroot.'/powerproexport',
+                $CFG->dataroot.'/powerproexport/user',
                 PARAM_RAW,
                 80
                 ));
@@ -31,7 +31,7 @@ if (has_capability('local/powerproexport:config', context_system::instance())) {
                 'local_powerproexport/usercsvprefix',
                 new lang_string('usercsvprefix', 'local_powerproexport'),
                 new lang_string('usercsvprefixdesc', 'local_powerproexport'),
-                'powerproexport_',
+                'powerproexport_user',
                 PARAM_RAW,
                 80
                 ));
@@ -40,7 +40,7 @@ if (has_capability('local/powerproexport:config', context_system::instance())) {
                 'local_powerproexport/coursecompletioncsvlocation',
                 new lang_string('coursecompletionscsvlocation', 'local_powerproexport'),
                 new lang_string('coursecompletionscsvlocationdesc', 'local_powerproexport'),
-                $CFG->dataroot.'/powerproexport',
+                $CFG->dataroot.'/powerproexport/coursecompletions',
                 PARAM_RAW,
                 80
                 ));
@@ -49,7 +49,7 @@ if (has_capability('local/powerproexport:config', context_system::instance())) {
                 'local_powerproexport/coursecompletioncsvprefix',
                 new lang_string('coursecompletionscsvprefix', 'local_powerproexport'),
                 new lang_string('coursecompletionscsvprefixdesc', 'local_powerproexport'),
-                'powerproexport_',
+                'powerproexport_coursecompletions',
                 PARAM_RAW,
                 80
                 ));

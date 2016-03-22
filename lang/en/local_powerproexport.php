@@ -30,7 +30,7 @@ $string['grouptype'] = 'Group';
 $string['ismanual'] = 'Is Power Pro Export manual?';
 $string['ismanualdesc'] = 'The grade export can be configured as a manual process or a automatic process, Tick the box to make the process manual<br>
 Turn off to make the process run automatically again';
-$string['isnotmanual'] = 'The manual RTO Grade Export is unavailable, you will be redirected to change the settings';
+$string['isnotmanual'] = 'The manual Power Pro Export is unavailable, you will be redirected to change the settings';
 $string['local/powerproexport:config'] = 'Configure Power Pro Export';
 $string['manualexport'] = 'Manual Export';
 $string['manualexportheader'] = 'Manually Export to Power Pro';
