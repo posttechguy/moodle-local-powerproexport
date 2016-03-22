@@ -38,8 +38,8 @@ if (has_capability('local/powerproexport:config', context_system::instance())) {
 
     $settings->add(new admin_setting_configdirectory(
                 'local_powerproexport/coursecompletioncsvlocation',
-                new lang_string('coursecompletioncsvlocation', 'local_powerproexport'),
-                new lang_string('coursecompletionsvlocationdesc', 'local_powerproexport'),
+                new lang_string('coursecompletionscsvlocation', 'local_powerproexport'),
+                new lang_string('coursecompletionscsvlocationdesc', 'local_powerproexport'),
                 $CFG->dataroot.'/powerproexport',
                 PARAM_RAW,
                 80
@@ -47,8 +47,8 @@ if (has_capability('local/powerproexport:config', context_system::instance())) {
 
     $settings->add(new admin_setting_configtext(
                 'local_powerproexport/coursecompletioncsvprefix',
-                new lang_string('coursecompletioncsvprefix', 'local_powerproexport'),
-                new lang_string('coursecompletioncsvprefixdesc', 'local_powerproexport'),
+                new lang_string('coursecompletionscsvprefix', 'local_powerproexport'),
+                new lang_string('coursecompletionscsvprefixdesc', 'local_powerproexport'),
                 'powerproexport_',
                 PARAM_RAW,
                 80
