@@ -12,7 +12,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2016032204;
+$plugin->version   = 2016032206;
 $plugin->requires  = 2015111600;
 $plugin->component = 'local_powerproexport';
 $plugin->maturity  = MATURITY_STABLE;

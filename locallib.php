@@ -69,7 +69,12 @@ function local_powerproexport_write_user_data($config, $runhow = 'auto', $data =
 
             //  profile_load_custom_fields($user);
 
-              $user->profile = (array)profile_user_record($user->id);
+              $user->profile  = (array)profile_user_record($user->id);
+              $employer       = (!empty($user->profile['employerother'])
+                                  and strtolower($user->profile['employerother']) != 'n/a'
+                                  and $user->profile['employer'] == 'Other')
+                              ? $user->profile['employerother']
+                              : $user->profile['employer'];
 
               // Write the line to CSV file.
               fwrite($fh,
@@ -87,7 +92,7 @@ function local_powerproexport_write_user_data($config, $runhow = 'auto', $data =
                       $user->profile['state'],
                       $user->profile['gender'],
                       $user->profile['postaladdress'],
-                      $user->profile['employer'],
+                      $employer,
                       $user->profile['usi'],
                       $user->profile['phone'])
                )."\r\n");

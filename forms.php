@@ -27,6 +27,13 @@ class local_powerproexport_manual_export_form extends moodleform {
 
         $strrequired = get_string('required');
 
+        $mform->addElement(
+            'static',
+            'description',
+            get_string('manualexport', 'local_powerproexport'),
+            get_string('manualexportdesc', 'local_powerproexport')
+        );
+
         $strsubmit = get_string('exportnow', 'local_powerproexport');
         $this->add_action_buttons(true, $strsubmit);
     }
@@ -41,15 +48,6 @@ class local_powerproexport_manual_export_form extends moodleform {
     public function validation($data, $files) {
         global $DB;
 
-        $error = array();
-
-        if ($data['course'] == 'selectacourse') {
-            $error['course'] = get_string('errorcourse', 'local_powerproexport');
-        }
-        if ($data['group'] == 'selectagroup') {
-            $error['group'] = get_string('errorgroup', 'local_powerproexport');
-        }
-
-        return (count($error) == 0) ? true : $error;
+        return array();
     }
 }

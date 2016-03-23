@@ -28,7 +28,7 @@ $string['coursecompletioncsvprefixdesc'] = 'The Course Completion CSV files will
 $string['errorcourse'] = 'Please choose a course';
 $string['errorgroup'] = 'Please choose a group';
 $string['exporterror'] = 'Error: An error has occurred while exporting the csv file, please return to the export page and try again';
-$string['exportnow'] = 'Export Now';
+$string['exportnow'] = 'Export Power Pro files now';
 $string['exportsuccess'] = 'Success: your file has successfully exported as a csv file';
 $string['grouptype'] = 'Group';
 $string['ismanual'] = 'Is Power Pro Export manual?';
@@ -59,3 +59,42 @@ $string['postaladdress'] = 'Postal addr.';
 $string['employer'] = 'Employer';
 $string['idnumber'] = 'USI';
 $string['phone'] = 'Mobile';
+
+
+$string['manualexport']         = 'Power Pro Export Description';
+$string['manualexportdesc']     = 'The Power Pro Export creates two files:
+<ul>
+    <li>
+        User profile data:
+        <ol style="list-style-type:decimal;">
+            <li>Username</li>
+            <li>Email address</li>
+            <li>First name</li>
+            <li>Surname</li>
+            <li>Country</li>
+            <li>Date of birth</li>
+            <li>Address street number</li>
+            <li>Address street name</li>
+            <li>Address location – suburb, locality or town</li>
+            <li>Postcode</li>
+            <li>State or territory</li>
+            <li>Gender</li>
+            <li>Postal details (if different from address details)</li>
+            <li>Employer</li>
+            <li>Unique Student Identifier</li>
+            <li>Contact phone number</li>
+        </ol>
+    </li>
+    <li>
+        Course completion data
+        <ol style="list-style-type:decimal;">
+            <li>Username</li>
+            <li>Course name</li>
+            <li>Course shortname</li>
+            <li>Unit name</li>
+            <li>Certificate issue code</li>
+            <li>Date completed</li>
+        </ol>
+    </li>
+</ul>
+';

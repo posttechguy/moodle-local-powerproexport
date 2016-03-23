@@ -52,7 +52,7 @@ if (empty($submitbutton)) {
 
         $config = get_config('local_powerproexport');
         if ($config->ismanual) {
-            local_powerproexport_write_csv_to_file('manual', $data);
+            local_powerproexport_cron('manual', $data);
             redirect(new moodle_url($returnurl), get_string('exportsuccess', 'local_powerproexport'));
         }
     } else {
