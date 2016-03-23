@@ -15,6 +15,7 @@ require_once($CFG->dirroot.'/user/profile/lib.php');
 
 function local_powerproexport_cron($runhow = 'auto', $data = null) {
 
+    set_config('local_powerproexport', 'lastrun', 0);
     $config = get_config('local_powerproexport');
 
     if (($runhow == 'auto' and $config->ismanual) or ($runhow == 'manual' and empty($config->ismanual))) {
@@ -70,9 +71,9 @@ function local_powerproexport_write_user_data($config, $runhow = 'auto', $data =
             //  profile_load_custom_fields($user);
 
               $user->profile  = (array)profile_user_record($user->id);
-              $employer       = (!empty($user->profile['employerother'])
-                                  and strtolower($user->profile['employerother']) != 'n/a'
-                                  and $user->profile['employer'] == 'Other')
+              $employer       = ($user->profile['employer'] == 'Other'
+                                  and !empty($user->profile['employerother'])
+                                  and strtolower($user->profile['employerother']) != 'n/a')
                               ? $user->profile['employerother']
                               : $user->profile['employer'];
 
