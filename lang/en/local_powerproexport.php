@@ -12,19 +12,31 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['country'] = 'Nationality';
+$string['dob'] = 'DOB';
+$string['email'] = 'Email';
+$string['employer'] = 'Employer';
+$string['firstname'] = 'Given names';
+$string['gender'] = 'Gender';
+$string['idnumber'] = 'USI';
+$string['lastname'] = 'Surname';
 $string['coursename'] = 'Course';
 $string['courseshortname'] = 'Course Shortname';
 $string['courseidnumber'] = 'Unit name';
 $string['certificatecode'] = 'Certificate issue code';
 $string['timecompleted'] = 'Date completed';
 $string['usercsvlocation'] = 'User CSV File Location';
-$string['usercsvlocationdesc'] = 'Full server path where User CSV files should be created. This directory must be writable by the web user';
+$string['usercsvlocationdesc'] = 'Full server path where User CSV files should be created.
+This directory must be writable by the web user';
 $string['usercsvprefix'] = 'User CSV File Name Prefix';
-$string['usercsvprefixdesc'] = 'The User CSV files will be created with a name of the current date in the format YYYYMMDD and an extension of ".csv". The prefix will be prepended to the beginning of the name';
+$string['usercsvprefixdesc'] = 'The User CSV files will be created with a name of the current date in the format YYYYMMDD
+and an extension of ".csv". The prefix will be prepended to the beginning of the name';
 $string['coursecompletioncsvlocation'] = 'Course Completion CSV File Location';
-$string['coursecompletioncsvlocationdesc'] = 'Full server path where Course Completion CSV files should be created. This directory must be writable by the web user';
+$string['coursecompletioncsvlocationdesc'] = 'Full server path where Course Completion CSV files should be created. This directory
+must be writable by the web user';
 $string['coursecompletioncsvprefix'] = 'Course Completion CSV File Name Prefix';
-$string['coursecompletioncsvprefixdesc'] = 'The Course Completion CSV files will be created with a name of the current date in the format YYYYMMDD and an extension of ".csv". The prefix will be prepended to the beginning of the name';
+$string['coursecompletioncsvprefixdesc'] = 'The Course Completion CSV files will be created with a name of the current date in the
+format YYYYMMDD and an extension of ".csv". The prefix will be prepended to the beginning of the name';
 $string['errorcourse'] = 'Please choose a course';
 $string['errorgroup'] = 'Please choose a group';
 $string['exporterror'] = 'Error: An error has occurred while exporting the csv file, please return to the export page and try again';
@@ -32,36 +44,12 @@ $string['exportnow'] = 'Export Power Pro files now';
 $string['exportsuccess'] = 'Success: your file has successfully exported as a csv file';
 $string['grouptype'] = 'Group';
 $string['ismanual'] = 'Is Power Pro Export manual?';
-$string['ismanualdesc'] = 'The grade export can be configured as a manual process or a automatic process, Tick the box to make the process manual<br>
+$string['ismanualdesc'] = 'The grade export can be configured as a manual process or a automatic process,
+Tick the box to make the process manual<br>
 Turn off to make the process run automatically again';
 $string['isnotmanual'] = 'The manual Power Pro Export is unavailable, you will be redirected to change the settings';
 $string['local/powerproexport:config'] = 'Configure Power Pro Export';
 $string['manualexport'] = 'Manual Export';
-$string['manualexportheader'] = 'Manually Export to Power Pro';
-$string['pluginname'] = 'Power Pro Export';
-$string['selectacourse'] = 'Select a course';
-$string['selectagroup'] = 'Select a group';
-$string['selectallgroups'] = 'All groups';
-$string['unitcode'] = 'USI';
-$string['username'] = 'Moodle User';
-$string['email'] = 'Email';
-$string['firstname'] = 'Given names';
-$string['lastname'] = 'Surname';
-$string['country'] = 'Nationality';
-$string['dob'] = 'DOB';
-$string['streetnumber'] = 'Street No';
-$string['streetname'] = 'Street Name';
-$string['town'] = 'Town/Suburb';
-$string['postcode'] = 'Postcode';
-$string['state'] = 'State';
-$string['gender'] = 'Gender';
-$string['postaladdress'] = 'Postal addr.';
-$string['employer'] = 'Employer';
-$string['idnumber'] = 'USI';
-$string['phone'] = 'Mobile';
-
-
-$string['manualexport']         = 'Power Pro Export Description';
 $string['manualexportdesc']     = 'The Power Pro Export creates two files:
 <ul>
     <li>
@@ -98,3 +86,18 @@ $string['manualexportdesc']     = 'The Power Pro Export creates two files:
     </li>
 </ul>
 ';
+$string['manualexportheader'] = 'Manually Export to Power Pro';
+$string['phone'] = 'Mobile';
+$string['pluginname'] = 'Power Pro Export';
+$string['postaladdress'] = 'Postal addr.';
+$string['postcode'] = 'Postcode';
+$string['selectacourse'] = 'Select a course';
+$string['selectagroup'] = 'Select a group';
+$string['selectallgroups'] = 'All groups';
+$string['state'] = 'State';
+$string['streetname'] = 'Street Name';
+$string['streetnumber'] = 'Street No';
+$string['town'] = 'Town/Suburb';
+$string['unitcode'] = 'USI';
+$string['username'] = 'Moodle User';
+
